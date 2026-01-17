@@ -1,0 +1,46 @@
+.merch-shop {
+    padding: 6rem 0;
+    background-color: var(--color-bg-secondary);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.section-title {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.section-subtitle {
+    color: var(--color-text-muted);
+}
+
+.merch-filters {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 0.5rem 1.5rem;
+    font-size: 0.8rem;
+    border-color: rgba(255, 255, 255, 0.2);
+    color: var(--color-text-muted);
+}
+
+.filter-btn.active,
+.filter-btn:hover {
+    border-color: var(--color-gold-primary);
+    color: var(--color-gold-primary);
+    background: transparent;
+}
+
+.filter-btn.active {
+    background: rgba(212, 175, 55, 0.1);
+}
+
+.merch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+}

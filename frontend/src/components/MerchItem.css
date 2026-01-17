@@ -1,0 +1,72 @@
+.merch-item {
+    background: var(--color-bg-primary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.merch-item:hover {
+    border-color: var(--color-gold-primary);
+    transform: translateY(-5px);
+}
+
+.merch-image-placeholder {
+    aspect-ratio: 1;
+    background-color: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.merch-details {
+    padding: 1.5rem;
+}
+
+.merch-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: var(--color-gold-primary);
+    color: var(--color-bg-primary);
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.merch-name {
+    font-family: var(--font-body);
+    color: var(--color-text-light);
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    font-weight: 400;
+}
+
+.merch-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.merch-price {
+    font-family: var(--font-heading);
+    color: var(--color-gold-primary);
+    font-size: 1.1rem;
+}
+
+.merch-add-btn {
+    padding: 0.5rem;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    line-height: 1;
+}

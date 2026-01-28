@@ -10,17 +10,23 @@
     transform: translateY(-5px);
 }
 
-.merch-image-placeholder {
+.merch-image-container {
     aspect-ratio: 1;
     background-color: #1a1a1a;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    font-size: 0.8rem;
-    letter-spacing: 0.1em;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+    position: relative;
+}
+
+.merch-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.merch-item:hover .merch-image {
+    transform: scale(1.05);
 }
 
 .merch-details {

@@ -23,7 +23,9 @@ const Navbar: React.FC = () => {
     return (
         <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
             <div className="container navbar-content">
-                <div className="logo">wayne stays</div>
+                <div className="logo">
+                    <img src="/logo.png?v=2" alt="Wayne Stays" />
+                </div>
                 <ul className="nav-links">
                     <li><a href="#accommodations">Accommodations</a></li>
                     <li><a href="#experiences">Experiences</a></li>

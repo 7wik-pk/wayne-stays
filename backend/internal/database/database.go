@@ -30,7 +30,7 @@ func Migrate(db *gorm.DB) error {
 
 	if err := db.AutoMigrate(
 		&models.Accommodation{},
-		// Add more models here as we build them
+		&models.Merchandise{},
 	); err != nil {
 		return fmt.Errorf("migration failed: %w", err)
 	}

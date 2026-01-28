@@ -8,6 +8,7 @@ import (
 	"github.com/wayne-stays/backend/internal/accommodation"
 	"github.com/wayne-stays/backend/internal/config"
 	"github.com/wayne-stays/backend/internal/database"
+	"github.com/wayne-stays/backend/internal/merchandise"
 	"github.com/wayne-stays/backend/internal/storage"
 )
 
@@ -75,6 +76,14 @@ func main() {
 
 		// Register accommodation routes
 		accommodationHandler.RegisterRoutes(v1)
+
+		// Initialize merchandise components
+		merchandiseRepo := merchandise.NewRepository(db)
+		merchandiseService := merchandise.NewService(merchandiseRepo, store)
+		merchandiseHandler := merchandise.NewHandler(merchandiseService)
+
+		// Register merchandise routes
+		merchandiseHandler.RegisterRoutes(v1)
 	}
 
 	// Start server

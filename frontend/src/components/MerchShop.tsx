@@ -1,22 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MerchItem from './MerchItem';
 import './MerchShop.css';
 
+interface Product {
+    id: string;
+    name: string;
+    price: number;
+    category: string;
+    image_url: string;
+    is_new: boolean;
+}
+
 const MerchShop: React.FC = () => {
     const [filter, setFilter] = useState<string>('all');
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    const products = [
-        { id: 1, name: 'Wayne Enterprises Leather Portfolio', price: 320.00, category: 'Accessories', isNew: true },
-        { id: 2, name: 'Wayne Manor Heritage Cashmere Scarf', price: 450.00, category: 'Apparel', isNew: true },
-        { id: 3, name: 'Martha\'s Pearls (Replica)', price: 450.00, category: 'Collectibles' },
-        { id: 4, name: 'Wayne Manor: Architectural Legacy', price: 125.00, category: 'Home' },
-        { id: 5, name: 'Martha Wayne Memorial Rose Set', price: 95.00, category: 'Home' },
-        { id: 6, name: 'Wayne Foundation Gala Program', price: 350.00, category: 'Collectibles' },
-        { id: 7, name: 'Kane County Reserve Wine', price: 420.00, category: 'Lifestyle' },
-        { id: 8, name: 'Gotham Skyline Silk Tie', price: 185.00, category: 'Apparel' },
-        { id: 9, name: 'Wayne Stays Luxury Linen Set', price: 380.00, category: 'Home' },
-        { id: 10, name: 'Gotham Opera House Poster', price: 165.00, category: 'Collectibles' },
-    ];
+    useEffect(() => {
+        const fetchProducts = async () => {
+            const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
+            try {
+                const response = await fetch(`${apiBase}/merchandise`);
+                if (!response.ok) throw new Error('Failed to fetch merchandise');
+                const data = await response.json();
+                setProducts(data.data);
+            } catch (err) {
+                console.error(err);
+                setError('Unable to load full collection.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProducts();
+    }, []);
 
     const filteredProducts = filter === 'all'
         ? products
@@ -42,17 +60,28 @@ const MerchShop: React.FC = () => {
                     ))}
                 </div>
 
-                <div className="merch-grid">
-                    {filteredProducts.map(product => (
-                        <MerchItem
-                            key={product.id}
-                            name={product.name}
-                            price={product.price}
-                            category={product.category}
-                            isNew={product.isNew}
-                        />
-                    ))}
-                </div>
+                {loading ? (
+                    <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-gold-primary)' }}>
+                        Loading collection...
+                    </div>
+                ) : error ? (
+                    <div style={{ textAlign: 'center', padding: '2rem', color: 'red' }}>
+                        {error}
+                    </div>
+                ) : (
+                    <div className="merch-grid">
+                        {filteredProducts.map(product => (
+                            <MerchItem
+                                key={product.id}
+                                name={product.name}
+                                price={product.price}
+                                category={product.category}
+                                image={product.image_url}
+                                isNew={product.is_new}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
         </section >
     );

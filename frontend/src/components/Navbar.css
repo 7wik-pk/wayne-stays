@@ -23,13 +23,20 @@
 }
 
 .logo {
-    font-family: var(--font-heading);
-    font-size: 1.5rem;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    color: var(--color-gold-primary);
-    text-transform: uppercase;
+    display: flex;
+    align-items: center;
     cursor: pointer;
+}
+
+.logo img {
+    height: 50px;
+    width: auto;
+    transition: transform 0.3s ease;
+}
+
+.logo:hover img {
+    transform: scale(1.05);
+    /* Subtle pulse effect */
 }
 
 .nav-links {

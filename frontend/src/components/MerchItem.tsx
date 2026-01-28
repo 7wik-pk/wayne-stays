@@ -5,10 +5,11 @@ interface MerchItemProps {
     name: string;
     price: number;
     category: string;
+    image: string;
     isNew?: boolean;
 }
 
-const MerchItem: React.FC<MerchItemProps> = ({ name, price, category, isNew }) => {
+const MerchItem: React.FC<MerchItemProps> = ({ name, price, image, isNew }) => {
     const handleAddToCart = () => {
         // Placeholder for cart logic
         alert(`Added ${name} to cart`);
@@ -16,8 +17,8 @@ const MerchItem: React.FC<MerchItemProps> = ({ name, price, category, isNew }) =
 
     return (
         <div className="merch-item">
-            <div className="merch-image-placeholder">
-                <span>{category} Item</span>
+            <div className="merch-image-container">
+                <img src={image} alt={name} className="merch-image" />
             </div>
             <div className="merch-details">
                 {isNew && <span className="merch-badge">New Arrival</span>}

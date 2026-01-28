@@ -6,22 +6,34 @@ import MerchShop from './components/MerchShop';
 function App() {
   const accommodations = [
     {
-      title: "The Manor West Wing",
-      description: "Experience the history of the Wayne legacy. Stay in the meticulously restored West Wing of the Wayne Manor, featuring original Victorian architecture blended with modern amenities.",
-      location: "Bristol Township, Gotham",
-      priceStart: "$2,500"
+      title: "Wayne Tower Sky Suites",
+      description: "Executive suites in the iconic Wayne Tower. Direct access to Wayne Enterprises board rooms, private viewing galleries, and the legendary penthouse lounge with 360° views from Gotham's tallest building.",
+      location: "Financial District, Gotham City",
+      priceStart: "$1,850"
     },
     {
-      title: "Gotham Heights Penthouse",
-      description: "A private sanctuary above the clouds. This high-rise complex offers panoramic views of the Gotham skyline, private elevator access, and helipad privileges.",
-      location: "Diamond District, Gotham",
-      priceStart: "$1,800"
-    },
-    {
-      title: "Martha's Vineyard Retreat",
-      description: "A serene escape dedicated to the memory of Martha Wayne. This coastal villa offers private beach access, organic farm-to-table dining, and complete seclusion.",
-      location: "Martha's Vineyard, MA",
+      title: "Miagani Island Sanctuary",
+      description: "Secluded island retreat accessible only by private ferry. Complete privacy, lighthouse views, and untouched natural beauty. An entire island experience with dedicated staff.",
+      location: "Miagani Island, Gotham Harbor",
       priceStart: "$3,200"
+    },
+    {
+      title: "The Clocktower Penthouse",
+      description: "Luxury apartment within Gotham's famous clocktower. Vaulted ceilings, original clockwork machinery, and stunning Gothic architecture. Live inside a functioning historic landmark.",
+      location: "Burnley, Old Gotham",
+      priceStart: "$1,400"
+    },
+    {
+      title: "Arkham District Gentleman's Club",
+      description: "Restored Victorian gentleman's club with leather libraries, billiard rooms, and private dining. A step back to Gotham's gilded age with members-only access to exclusive lounges.",
+      location: "Arkham, North Gotham",
+      priceStart: "$950"
+    },
+    {
+      title: "Kane County Vineyard Estate",
+      description: "Rolling vineyard estate producing Gotham's finest wines. Private wine cellar, tasting room, and farm-to-table cuisine by Michelin-starred chefs with exclusive vintage tastings.",
+      location: "Kane County, Gotham Outskirts",
+      priceStart: "$2,100"
     }
   ];
 

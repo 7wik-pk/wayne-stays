@@ -6,12 +6,16 @@ const MerchShop: React.FC = () => {
     const [filter, setFilter] = useState<string>('all');
 
     const products = [
-        { id: 1, name: 'GCPD Tactical Fleece', price: 85.00, category: 'Apparel', isNew: true },
-        { id: 2, name: 'Wayne Ent. Journal', price: 45.00, category: 'Accessories' },
-        { id: 3, name: 'Iceberg Lounge Coasters', price: 35.00, category: 'Home' },
-        { id: 4, name: 'Vote Dent Pin', price: 15.00, category: 'Collectibles' },
-        { id: 5, name: 'Martha\'s Pearls (Replica)', price: 450.00, category: 'Collectibles' },
-        { id: 6, name: 'Arkham Asylum Keytag', price: 25.00, category: 'Accessories' },
+        { id: 1, name: 'Wayne Enterprises Leather Portfolio', price: 320.00, category: 'Accessories', isNew: true },
+        { id: 2, name: 'Wayne Manor Heritage Cashmere Scarf', price: 450.00, category: 'Apparel', isNew: true },
+        { id: 3, name: 'Martha\'s Pearls (Replica)', price: 450.00, category: 'Collectibles' },
+        { id: 4, name: 'Wayne Manor: Architectural Legacy', price: 125.00, category: 'Home' },
+        { id: 5, name: 'Martha Wayne Memorial Rose Set', price: 95.00, category: 'Home' },
+        { id: 6, name: 'Wayne Foundation Gala Program', price: 350.00, category: 'Collectibles' },
+        { id: 7, name: 'Kane County Reserve Wine', price: 420.00, category: 'Lifestyle' },
+        { id: 8, name: 'Gotham Skyline Silk Tie', price: 185.00, category: 'Apparel' },
+        { id: 9, name: 'Wayne Stays Luxury Linen Set', price: 380.00, category: 'Home' },
+        { id: 10, name: 'Gotham Opera House Poster', price: 165.00, category: 'Collectibles' },
     ];
 
     const filteredProducts = filter === 'all'
@@ -23,11 +27,11 @@ const MerchShop: React.FC = () => {
             <div className="container">
                 <div className="section-header text-center mb-lg">
                     <h2 className="section-title">The Collection</h2>
-                    <p className="section-subtitle">Exlcusive memorabilia from Gotham City.</p>
+                    <p className="section-subtitle">Exclusive memorabilia from Gotham City.</p>
                 </div>
 
                 <div className="merch-filters">
-                    {['all', 'apparel', 'collectibles', 'accessories'].map(cat => (
+                    {['all', 'apparel', 'accessories', 'collectibles', 'home', 'lifestyle'].map(cat => (
                         <button
                             key={cat}
                             className={`filter-btn ${filter === cat ? 'active' : ''}`}
@@ -50,7 +54,7 @@ const MerchShop: React.FC = () => {
                     ))}
                 </div>
             </div>
-        </section>
+        </section >
     );
 };
 

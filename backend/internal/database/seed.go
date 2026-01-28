@@ -149,7 +149,7 @@ func Seed(db *gorm.DB, store storage.Storage) error {
 		{Name: "Wayne Foundation Gala Program", Price: 35000, Category: "Collectibles", ImageURL: "merch/collectibles/program.png"},
 		{Name: "Kane County Reserve Wine", Price: 42000, Category: "Lifestyle", ImageURL: "merch/lifestyle/wine.png"},
 		{Name: "Gotham Skyline Silk Tie", Price: 18500, Category: "Apparel", ImageURL: "merch/apparel/tie.png"},
-		{Name: "Wayne Stays Luxury Linen Set", Price: 38000, Category: "Home", ImageURL: "merch/home/linens.png"},
+		{Name: "Wayne Stays Linen Set", Price: 38000, Category: "Home", ImageURL: "merch/home/linens.png"},
 		{Name: "Gotham Opera House Poster", Price: 16500, Category: "Collectibles", ImageURL: "merch/collectibles/poster.png"},
 	}
 

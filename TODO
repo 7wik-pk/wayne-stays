@@ -1,7 +1,29 @@
 backend
 
-
+- ensure postgres migrations are in place from the beginning
+- stripe for payment processing
 
 frontend
 
-- the site should also have a merch shop section where gotham themed (GCPD, harvey dent and other political campaigners, batman and the bat family, etc.) merchandise items are sold
+- the site should also have a merch shop section where gotham themed (GCPD, harvey dent and other political campaigners, batman and the bat family, etc.) merchandise items are sold - STARTED
+
+- filters and sort options for everything
+
+overall
+
+- docker containerise everything
+- add car and chauffeur rentals
+- cloud deployment - localstack and doing it for real
+
+objectives
+
+- load test & improve scalability
+
+latest Next Steps from agent:
+
+Build accommodation API endpoints (GET /accommodations, GET /accommodations/:id)
+Connect frontend to backend
+Add filtering & search
+Build booking system
+Add Stripe payment integration
+Implement user authentication

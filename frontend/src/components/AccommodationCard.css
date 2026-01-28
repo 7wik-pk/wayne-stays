@@ -13,6 +13,24 @@
     border-color: var(--color-gold-primary);
 }
 
+.card-image-container {
+    height: 250px;
+    background-color: #1a1a1a;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+}
+
+.card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.card:hover .card-image {
+    transform: scale(1.05);
+}
+
 .card-wireframe {
     height: 250px;
     background-color: #1a1a1a;

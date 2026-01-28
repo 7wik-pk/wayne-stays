@@ -9,6 +9,11 @@ Golang backend API for Wayne Stays luxury accommodation platform.
 - **Storage**: Local filesystem (dev) → S3 (production)
 - **Payments**: Stripe (planned)
 
+## Documentation
+
+- **[Architecture Overview](ARCHITECTURE.md)** - Current architecture, design decisions, and future evolution path
+- **[API Documentation](../API.md)** - Complete API endpoint reference
+
 ## Getting Started
 
 ### Prerequisites
@@ -19,9 +24,12 @@ Golang backend API for Wayne Stays luxury accommodation platform.
 
 ### Installation
 
-1. **Start PostgreSQL**:
+**Quick Start:** See [DEVELOPMENT.md](../DEVELOPMENT.md) for complete setup guide.
+
+1. **Start PostgreSQL** (from project root):
    ```bash
-   docker-compose up -d postgres
+   cd ..  # Go to project root
+   docker compose up -d postgres
    ```
 
 2. **Install dependencies**:
@@ -122,6 +130,15 @@ go run cmd/api/main.go
 2. **Routes**: Add to `cmd/api/main.go` or create handlers
 3. **Database**: Update migration in `database.Migrate()`
 
+### Static Files & Images
+
+When running in Docker:
+- Images are served from `./img` (mounted to `/root/img` in container)
+- Accessible via `/static/*` endpoint
+- CORS is configured to allow frontend access from `http://localhost:3000`
+
+**Note:** If you add new images locally, they show up instantly in the container due to volume mounting.
+
 ### Storage Backends
 
 **Local (Development)**:
@@ -135,9 +152,10 @@ go run cmd/api/main.go
 
 ## Next Steps
 
-- [ ] Build accommodation CRUD handlers
+- [x] Build accommodation CRUD handlers ✅
 - [ ] Add authentication & authorization
 - [ ] Implement S3 storage backend
 - [ ] Add Stripe payment integration
 - [ ] Create booking system
 - [ ] Add user management
+

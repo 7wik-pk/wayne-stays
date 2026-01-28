@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -96,8 +97,8 @@ func getEnvSlice(key string, defaultValue []string) []string {
 	if value == "" {
 		return defaultValue
 	}
-	// Simple comma split - could use strings.Split if needed
-	return []string{value}
+	// Simple comma split
+	return strings.Split(value, ",")
 }
 
 // MustLoad loads configuration and panics on error

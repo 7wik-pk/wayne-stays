@@ -1,41 +1,54 @@
+import { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import AccommodationCard from './components/AccommodationCard';
 import MerchShop from './components/MerchShop';
 
+// API configuration
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
+
+interface Accommodation {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  location: string;
+  priceStart: number;
+  capacity: number;
+  category: string;
+  amenities: string[];
+  images: {
+    hero: string;
+    gallery: string[];
+  };
+}
+
 function App() {
-  const accommodations = [
-    {
-      title: "Wayne Tower Sky Suites",
-      description: "Executive suites in the iconic Wayne Tower. Direct access to Wayne Enterprises board rooms, private viewing galleries, and the legendary penthouse lounge with 360° views from Gotham's tallest building.",
-      location: "Financial District, Gotham City",
-      priceStart: "$1,850"
-    },
-    {
-      title: "Miagani Island Sanctuary",
-      description: "Secluded island retreat accessible only by private ferry. Complete privacy, lighthouse views, and untouched natural beauty. An entire island experience with dedicated staff.",
-      location: "Miagani Island, Gotham Harbor",
-      priceStart: "$3,200"
-    },
-    {
-      title: "The Clocktower Penthouse",
-      description: "Luxury apartment within Gotham's famous clocktower. Vaulted ceilings, original clockwork machinery, and stunning Gothic architecture. Live inside a functioning historic landmark.",
-      location: "Burnley, Old Gotham",
-      priceStart: "$1,400"
-    },
-    {
-      title: "Arkham District Gentleman's Club",
-      description: "Restored Victorian gentleman's club with leather libraries, billiard rooms, and private dining. A step back to Gotham's gilded age with members-only access to exclusive lounges.",
-      location: "Arkham, North Gotham",
-      priceStart: "$950"
-    },
-    {
-      title: "Kane County Vineyard Estate",
-      description: "Rolling vineyard estate producing Gotham's finest wines. Private wine cellar, tasting room, and farm-to-table cuisine by Michelin-starred chefs with exclusive vintage tastings.",
-      location: "Kane County, Gotham Outskirts",
-      priceStart: "$2,100"
-    }
-  ];
+  const [accommodations, setAccommodations] = useState<Accommodation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchAccommodations = async () => {
+      try {
+        const response = await fetch(`${API_URL}/accommodations`);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setAccommodations(data.data || []);
+      } catch (err) {
+        console.error('Failed to fetch accommodations:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load accommodations');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAccommodations();
+  }, []);
 
   return (
     <div className="app">
@@ -50,15 +63,39 @@ function App() {
           </p>
         </div>
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-          gap: '2rem'
-        }}>
-          {accommodations.map((acc, index) => (
-            <AccommodationCard key={index} {...acc} />
-          ))}
-        </div>
+        {loading && (
+          <div style={{ textAlign: 'center', padding: '3rem' }}>
+            <p style={{ color: 'var(--color-primary)' }}>Loading accommodations...</p>
+          </div>
+        )}
+
+        {error && (
+          <div style={{ textAlign: 'center', padding: '3rem' }}>
+            <p style={{ color: '#e74c3c' }}>Error: {error}</p>
+            <p style={{ color: 'var(--color-text-muted)', marginTop: '1rem' }}>
+              Please ensure the backend API is running on port 8080
+            </p>
+          </div>
+        )}
+
+        {!loading && !error && (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+            gap: '2rem'
+          }}>
+            {accommodations.map((acc) => (
+              <AccommodationCard
+                key={acc.id}
+                title={acc.title}
+                description={acc.description}
+                location={acc.location}
+                priceStart={`$${acc.priceStart.toLocaleString()}`}
+                image={acc.images.hero}
+              />
+            ))}
+          </div>
+        )}
       </main>
 
       <MerchShop />

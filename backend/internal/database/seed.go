@@ -100,11 +100,11 @@ func Seed(db *gorm.DB, store storage.Storage) error {
 			Status:      "active",
 			Amenities:   []string{"library", "billiards", "private-dining", "victorian-architecture", "exclusive-lounge"},
 			Images: models.ImageSet{
-				Hero: "accommodations/arkham_district_gentlemens_club/587092492_18332589751210508_2764734941953359835_n.heic",
+				Hero: "accommodations/arkham_district_gentlemens_club/587092492_18332589751210508_2764734941953359835_n.heic.jpg",
 				Gallery: []string{
-					"accommodations/arkham_district_gentlemens_club/588043143_18332589760210508_572137201056803845_n.heic",
-					"accommodations/arkham_district_gentlemens_club/589122197_18332589742210508_2115549378885077875_n.heic",
-					"accommodations/arkham_district_gentlemens_club/589815981_18332589733210508_4757641263690381477_n.heic",
+					"accommodations/arkham_district_gentlemens_club/588043143_18332589760210508_572137201056803845_n.heic.jpg",
+					"accommodations/arkham_district_gentlemens_club/589122197_18332589742210508_2115549378885077875_n.heic.jpg",
+					"accommodations/arkham_district_gentlemens_club/589815981_18332589733210508_4757641263690381477_n.heic.jpg",
 				},
 			},
 		},

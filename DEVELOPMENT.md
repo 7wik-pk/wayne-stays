@@ -29,6 +29,27 @@ docker compose up -d
 - Backend API: http://localhost:8080
 - API Docs: http://localhost:8080/api/v1
 
+## Running Frontend and Backend in development environments
+
+### Start the database (& other services to be added in the future)
+```bash
+docker compose up -d postgres
+```
+
+For the next 2 steps, you can either run both backend and frontend on 2 separate terminal windows, or add an ampersand (&) to the end of each command to run them in the background. In the latter case, remember to run cd .. after each command to return to the root directory.
+
+### Start the backend
+```bash
+cd backend
+go run cmd/api/main.go
+```
+
+### Start the frontend
+```bash
+cd frontend
+npm run dev
+```
+
 ---
 
 ## 📋 Prerequisites

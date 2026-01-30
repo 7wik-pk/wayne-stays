@@ -42,6 +42,7 @@ npm run dev
 - **[Development Guide](DEVELOPMENT.md)** - Complete setup and troubleshooting
 - **[API Reference](API.md)** - Backend API documentation
 - **[Backend Architecture](backend/ARCHITECTURE.md)** - Architecture decisions
+- **[Payment Architecture](backend/docs/PAYMENT_GATEWAY_STRATEGY.md)** - Multi-gateway payment design
 - **[Image Reference](DC_CITIES_REFERENCE.md)** - Real-world location mappings
 
 ---
@@ -53,10 +54,18 @@ wayne-stays/
 ├── docker-compose.yml          # Infrastructure (PostgreSQL, Redis, MinIO)
 ├── frontend/                   # React + TypeScript + Vite
 ├── backend/                    # Golang + Gin + GORM + PostgreSQL
+│   ├── docs/                   # Architecture & design decisions
+│   └── internal/payment/       # Multi-gateway payment abstraction
 ├── img/                        # Static accommodation images
 ├── scripts/                    # Utility scripts
 └── DEVELOPMENT.md              # Setup guide
 ```
+
+---
+## Database Schema (ERD diagram)
+
+draw.io link to the ERD diagram:
+https://drive.google.com/file/d/1BJ7NUKANT-lhKWoc-eQ8d7itU7xDwLrn/view?usp=sharing
 
 ---
 
@@ -74,7 +83,8 @@ wayne-stays/
 ### Planned
 - 🔜 User authentication & authorization
 - 🔜 Booking system with date selection
-- 🔜 Stripe payment integration
+- 🔜 Multi-gateway payments (Stripe, Razorpay, Juspay)
+- 🔜 Saved payment methods with nicknames
 - 🔜 Seasonal & dynamic pricing
 - 🔜 Real-time availability calendar
 - 🔜 Reviews & ratings

@@ -1,0 +1,618 @@
+// Wayne Stays Database Schema
+// Use this at https://dbdiagram.io to visualize
+// Last updated: 2026-01-30
+
+Project wayne_stays {
+  database_type: 'PostgreSQL'
+  Note: 'Wayne Stays - Luxury Accommodation Booking Platform'
+}
+
+// ============================================
+// EXISTING TABLES (Already Implemented)
+// ============================================
+
+Table accommodations {
+  id uuid [pk, default: `gen_random_uuid()`]
+  slug varchar(255) [unique, not null]
+  title varchar(255) [not null]
+  description text
+  location varchar(255)
+  price_start integer [not null, note: 'Price in cents']
+  capacity integer [default: 2]
+  category varchar(50) [note: 'urban-luxury, island, historic, countryside']
+  status varchar(20) [default: 'active', note: 'active, maintenance, inactive']
+  amenities jsonb [note: 'Array of amenity strings']
+  images jsonb [note: 'Object with hero and gallery array']
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  deleted_at timestamp [null]
+  
+  indexes {
+    slug
+    category
+    status
+    deleted_at
+  }
+  
+  Note: 'Luxury properties available for booking'
+}
+
+Table merchandise {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar(255) [not null]
+  description text
+  price bigint [not null, note: 'Price in cents']
+  category varchar(50) [note: 'apparel, accessories, collectibles, home, lifestyle']
+  image_url varchar(500)
+  is_new boolean [default: false]
+  stock_quantity integer [default: 0, note: 'TODO: Add inventory management']
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  deleted_at timestamp [null]
+  
+  indexes {
+    category
+    is_new
+    deleted_at
+  }
+  
+  Note: 'Gotham-themed merchandise items'
+}
+
+// ============================================
+// NEW TABLES (To Be Implemented)
+// ============================================
+
+Table users {
+  id uuid [pk, default: `gen_random_uuid()`]
+  email varchar(255) [unique, not null]
+  password_hash varchar(255) [not null]
+  first_name varchar(100)
+  last_name varchar(100)
+  phone varchar(20)
+  role varchar(20) [default: 'customer', note: 'customer, admin, concierge']
+  email_verified boolean [default: false]
+  email_verification_token varchar(255) [null]
+  password_reset_token varchar(255) [null]
+  password_reset_expires timestamp [null]
+  last_login_at timestamp [null]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  deleted_at timestamp [null]
+  
+  indexes {
+    email
+    role
+    email_verification_token
+    password_reset_token
+    deleted_at
+  }
+  
+  Note: 'User accounts for authentication and bookings'
+}
+
+Table gateway_customers {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [ref: > users.id, not null]
+  gateway_provider varchar(50) [not null, note: 'stripe, razorpay, juspay, etc.']
+  gateway_customer_id varchar(255) [not null, note: 'Customer ID from payment gateway']
+  
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    user_id
+    gateway_provider
+    gateway_customer_id
+    (user_id, gateway_provider) [unique, name: 'idx_user_gateway_unique']
+  }
+  
+  Note: '''
+    Gateway customer IDs for users across different payment providers.
+    One row per user per gateway (e.g., user has Stripe customer ID, Razorpay customer ID).
+    
+    To add a new gateway: just insert a new row (no schema changes needed).
+  '''
+}
+
+Table user_profiles {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [ref: > users.id, unique, not null]
+  avatar_url varchar(500)
+  date_of_birth date
+  address_line1 varchar(255)
+  address_line2 varchar(255)
+  city varchar(100)
+  state varchar(100)
+  postal_code varchar(20)
+  country varchar(100)
+  preferences jsonb [note: 'User preferences: notifications, dietary, accessibility']
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  Note: 'Extended user profile information'
+}
+
+Table payment_methods {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [ref: > users.id, not null]
+  
+  // Gateway information
+  gateway_provider varchar(50) [not null, note: 'stripe, razorpay, juspay']
+  gateway_payment_method_id varchar(255) [not null, note: 'Payment method ID from gateway']
+  
+  // Card metadata (safe to store)
+  type varchar(20) [not null, note: 'card, bank_account, upi, wallet']
+  card_brand varchar(20) [note: 'visa, mastercard, amex, etc.']
+  card_last4 varchar(4) [note: 'Last 4 digits']
+  card_exp_month integer [note: '1-12']
+  card_exp_year integer [note: 'YYYY']
+  card_fingerprint varchar(255) [note: 'Gateway fingerprint for duplicate detection']
+  
+  // User preferences
+  nickname varchar(100) [note: 'User-friendly name: "My Visa", "Work Card", etc.']
+  is_default boolean [default: false]
+  
+  // Metadata
+  billing_details jsonb [note: 'Name, address, etc.']
+  metadata jsonb [note: 'Gateway-specific metadata']
+  
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  deleted_at timestamp [null]
+  
+  indexes {
+    user_id
+    gateway_provider
+    gateway_payment_method_id
+    is_default
+    deleted_at
+  }
+  
+  Note: '''
+    Saved payment methods for users.
+    Stores metadata only - actual card details stay with payment gateway.
+    
+    Gateway customer IDs stored in gateway_customers table.
+  '''
+}
+
+Table bookings {
+  id uuid [pk, default: `gen_random_uuid()`]
+  booking_reference varchar(20) [unique, not null, note: 'Human-readable: WS-ABC123']
+  user_id uuid [ref: > users.id, not null]
+  accommodation_id uuid [ref: > accommodations.id, not null]
+  
+  // Booking details
+  check_in_date date [not null]
+  check_out_date date [not null]
+  num_guests integer [not null]
+  num_nights integer [not null, note: 'Calculated field']
+  
+  // Pricing
+  price_per_night integer [not null, note: 'Price in cents at time of booking']
+  subtotal integer [not null, note: 'Price in cents']
+  taxes integer [not null, note: 'Price in cents']
+  fees integer [default: 0, note: 'Service fees in cents']
+  total_amount integer [not null, note: 'Price in cents']
+  
+  // Status tracking
+  status varchar(20) [default: 'pending', note: 'pending, confirmed, cancelled, completed, no_show']
+  cancellation_reason text [null]
+  cancelled_at timestamp [null]
+  
+  // Guest information
+  guest_name varchar(255) [not null]
+  guest_email varchar(255) [not null]
+  guest_phone varchar(20)
+  special_requests text
+  
+  // Metadata
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  deleted_at timestamp [null]
+  
+  indexes {
+    booking_reference
+    user_id
+    accommodation_id
+    check_in_date
+    check_out_date
+    status
+    (check_in_date, check_out_date) [name: 'idx_booking_dates']
+    deleted_at
+  }
+  
+  Note: 'Accommodation reservations'
+}
+
+Table orders {
+  id uuid [pk, default: `gen_random_uuid()`]
+  order_number varchar(20) [unique, not null, note: 'Human-readable: WS-ORD-ABC123']
+  user_id uuid [ref: > users.id, not null]
+  
+  // Order totals
+  subtotal integer [not null, note: 'Sum of items in cents']
+  shipping_cost integer [default: 0, note: 'Shipping in cents']
+  tax integer [not null, note: 'Tax in cents']
+  discount_amount integer [default: 0, note: 'Discount in cents']
+  total_amount integer [not null, note: 'Final total in cents']
+  
+  // Shipping information
+  shipping_name varchar(255) [not null]
+  shipping_email varchar(255) [not null]
+  shipping_phone varchar(20)
+  shipping_address_line1 varchar(255) [not null]
+  shipping_address_line2 varchar(255)
+  shipping_city varchar(100) [not null]
+  shipping_state varchar(100)
+  shipping_postal_code varchar(20) [not null]
+  shipping_country varchar(100) [not null]
+  
+  // Status tracking
+  status varchar(20) [default: 'pending', note: 'pending, paid, processing, shipped, delivered, cancelled, refunded']
+  tracking_number varchar(255) [null]
+  shipped_at timestamp [null]
+  delivered_at timestamp [null]
+  cancelled_at timestamp [null]
+  cancellation_reason text [null]
+  
+  // Notes
+  customer_notes text
+  internal_notes text
+  
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  deleted_at timestamp [null]
+  
+  indexes {
+    order_number
+    user_id
+    status
+    created_at
+    deleted_at
+  }
+  
+  Note: 'Merchandise orders'
+}
+
+Table order_items {
+  id uuid [pk, default: `gen_random_uuid()`]
+  order_id uuid [ref: > orders.id, not null]
+  merchandise_id uuid [ref: > merchandise.id, not null]
+  
+  // Item details (snapshot at time of purchase)
+  product_name varchar(255) [not null, note: 'Snapshot in case product changes']
+  product_image_url varchar(500)
+  unit_price integer [not null, note: 'Price per item in cents']
+  quantity integer [not null, default: 1]
+  subtotal integer [not null, note: 'unit_price * quantity in cents']
+  
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    order_id
+    merchandise_id
+  }
+  
+  Note: 'Line items in merchandise orders'
+}
+
+Table booking_payments {
+  id uuid [pk, default: `gen_random_uuid()`]
+  booking_id uuid [ref: > bookings.id, not null]
+  user_id uuid [ref: > users.id, not null]
+  
+  // Payment gateway
+  gateway_provider varchar(50) [not null, default: 'stripe', note: 'stripe, juspay, razorpay, etc.']
+  
+  // Payment details
+  amount integer [not null, note: 'Amount in cents']
+  currency varchar(3) [default: 'AUD']
+  payment_method_id uuid [ref: > payment_methods.id, null, note: 'Saved payment method used (optional)']
+  payment_method_type varchar(50) [note: 'card, bank_transfer, upi, wallet, etc.']
+  
+  // Gateway transaction references (specific to this payment)
+  gateway_payment_id varchar(255) [unique, note: 'Payment intent/transaction ID from gateway']
+  gateway_charge_id varchar(255) [note: 'Charge/capture ID from gateway']
+  gateway_order_id varchar(255) [note: 'Order ID (used by some providers like Razorpay)']
+  
+  // Status
+  status varchar(20) [default: 'pending', note: 'pending, processing, succeeded, failed, refunded']
+  failure_reason text [null]
+  
+  // Refund tracking
+  refund_amount integer [default: 0, note: 'Amount in cents']
+  refunded_at timestamp [null]
+  
+  // Metadata
+  metadata jsonb [note: 'Gateway-specific metadata']
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    booking_id
+    user_id
+    gateway_provider
+    gateway_payment_id
+    gateway_charge_id
+    payment_method_id
+    status
+    created_at
+  }
+  
+  Note: '''
+    Payment transactions for accommodation bookings.
+    Supports multiple payment gateways (Stripe, Juspay, Razorpay, etc.).
+    
+    Gateway customer IDs stored in users table (not here - DRY).
+    Saved payment method details in payment_methods table.
+    
+    Field mapping by provider:
+    - Stripe: gateway_payment_id = payment_intent_id, gateway_charge_id = charge_id
+    - Razorpay: gateway_payment_id = payment_id, gateway_order_id = order_id
+    - Juspay: gateway_payment_id = payment_id, gateway_charge_id = transaction_id
+  '''
+}
+
+Table order_payments {
+  id uuid [pk, default: `gen_random_uuid()`]
+  order_id uuid [ref: > orders.id, not null]
+  user_id uuid [ref: > users.id, not null]
+  
+  // Payment gateway
+  gateway_provider varchar(50) [not null, default: 'stripe', note: 'stripe, juspay, razorpay, etc.']
+  
+  // Payment details
+  amount integer [not null, note: 'Amount in cents']
+  currency varchar(3) [default: 'AUD']
+  payment_method_id uuid [ref: > payment_methods.id, null, note: 'Saved payment method used (optional)']
+  payment_method_type varchar(50) [note: 'card, bank_transfer, upi, wallet, etc.']
+  
+  // Gateway transaction references (specific to this payment)
+  gateway_payment_id varchar(255) [unique, note: 'Payment intent/transaction ID from gateway']
+  gateway_charge_id varchar(255) [note: 'Charge/capture ID from gateway']
+  gateway_order_id varchar(255) [note: 'Order ID (used by some providers like Razorpay)']
+  
+  // Status
+  status varchar(20) [default: 'pending', note: 'pending, processing, succeeded, failed, refunded']
+  failure_reason text [null]
+  
+  // Refund tracking
+  refund_amount integer [default: 0, note: 'Amount in cents']
+  refunded_at timestamp [null]
+  
+  // Metadata
+  metadata jsonb [note: 'Gateway-specific metadata']
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    order_id
+    user_id
+    gateway_provider
+    gateway_payment_id
+    gateway_charge_id
+    payment_method_id
+    status
+    created_at
+  }
+  
+  Note: '''
+    Payment transactions for merchandise orders.
+    Supports multiple payment gateways (Stripe, Juspay, Razorpay, etc.).
+    
+    Gateway customer IDs stored in users table (not here - DRY).
+    Saved payment method details in payment_methods table.
+  '''
+}
+
+Table reviews {
+  id uuid [pk, default: `gen_random_uuid()`]
+  booking_id uuid [ref: > bookings.id, unique, not null]
+  user_id uuid [ref: > users.id, not null]
+  accommodation_id uuid [ref: > accommodations.id, not null]
+  
+  // Rating (1-5 stars)
+  overall_rating integer [not null, note: '1-5']
+  cleanliness_rating integer [note: '1-5']
+  accuracy_rating integer [note: '1-5']
+  location_rating integer [note: '1-5']
+  value_rating integer [note: '1-5']
+  
+  // Review content
+  title varchar(255)
+  comment text
+  
+  // Photos
+  photos jsonb [note: 'Array of photo URLs']
+  
+  // Moderation
+  is_verified boolean [default: false, note: 'Verified stay']
+  is_published boolean [default: true]
+  moderation_status varchar(20) [default: 'pending', note: 'pending, approved, rejected']
+  moderated_at timestamp [null]
+  moderated_by uuid [ref: > users.id, null]
+  
+  // Response from property
+  host_response text [null]
+  host_responded_at timestamp [null]
+  
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  deleted_at timestamp [null]
+  
+  indexes {
+    booking_id
+    user_id
+    accommodation_id
+    overall_rating
+    is_published
+    moderation_status
+    deleted_at
+  }
+  
+  Note: 'Guest reviews for accommodations'
+}
+
+Table availability_calendar {
+  id uuid [pk, default: `gen_random_uuid()`]
+  accommodation_id uuid [ref: > accommodations.id, not null]
+  date date [not null]
+  
+  // Availability
+  is_available boolean [default: true]
+  reason varchar(50) [note: 'booked, maintenance, blocked']
+  booking_id uuid [ref: > bookings.id, null, note: 'If booked, reference to booking']
+  
+  // Dynamic pricing
+  price_override integer [null, note: 'Override price in cents for this date']
+  min_nights integer [default: 1]
+  
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    accommodation_id
+    date
+    is_available
+    (accommodation_id, date) [unique, name: 'idx_accommodation_date']
+  }
+  
+  Note: 'Daily availability and pricing calendar'
+}
+
+Table sessions {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [ref: > users.id, not null]
+  token varchar(500) [unique, not null]
+  refresh_token varchar(500) [unique]
+  ip_address varchar(45)
+  user_agent text
+  expires_at timestamp [not null]
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    user_id
+    token
+    refresh_token
+    expires_at
+  }
+  
+  Note: 'User session management for JWT tokens'
+}
+
+Table audit_logs {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [ref: > users.id, null]
+  entity_type varchar(50) [not null, note: 'booking, payment, user, etc.']
+  entity_id uuid [not null]
+  action varchar(50) [not null, note: 'create, update, delete, cancel']
+  changes jsonb [note: 'Before/after values']
+  ip_address varchar(45)
+  user_agent text
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    user_id
+    entity_type
+    entity_id
+    action
+    created_at
+  }
+  
+  Note: 'Audit trail for important actions'
+}
+
+// ============================================
+// FUTURE TABLES (Phase 2+)
+// ============================================
+
+Table wishlists {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [ref: > users.id, not null]
+  name varchar(255) [default: 'My Wishlist']
+  is_default boolean [default: false]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  Note: 'User wishlists for saved accommodations'
+}
+
+Table wishlist_items {
+  id uuid [pk, default: `gen_random_uuid()`]
+  wishlist_id uuid [ref: > wishlists.id, not null]
+  accommodation_id uuid [ref: > accommodations.id, not null]
+  notes text
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    wishlist_id
+    accommodation_id
+    (wishlist_id, accommodation_id) [unique]
+  }
+  
+  Note: 'Items in user wishlists'
+}
+
+Table notifications {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [ref: > users.id, not null]
+  type varchar(50) [not null, note: 'booking_confirmed, payment_received, etc.']
+  title varchar(255) [not null]
+  message text [not null]
+  data jsonb [note: 'Additional notification data']
+  is_read boolean [default: false]
+  read_at timestamp [null]
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    user_id
+    type
+    is_read
+    created_at
+  }
+  
+  Note: 'In-app notifications for users'
+}
+
+Table coupons {
+  id uuid [pk, default: `gen_random_uuid()`]
+  code varchar(50) [unique, not null]
+  description text
+  discount_type varchar(20) [not null, note: 'percentage, fixed_amount']
+  discount_value integer [not null, note: 'Percentage (1-100) or cents']
+  min_booking_amount integer [note: 'Minimum booking amount in cents']
+  max_discount_amount integer [note: 'Maximum discount in cents']
+  usage_limit integer [null, note: 'Total usage limit']
+  usage_count integer [default: 0]
+  valid_from timestamp [not null]
+  valid_until timestamp [not null]
+  is_active boolean [default: true]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    code
+    is_active
+    valid_from
+    valid_until
+  }
+  
+  Note: 'Discount coupons for bookings'
+}
+
+Table booking_coupons {
+  id uuid [pk, default: `gen_random_uuid()`]
+  booking_id uuid [ref: > bookings.id, not null]
+  coupon_id uuid [ref: > coupons.id, not null]
+  discount_amount integer [not null, note: 'Actual discount applied in cents']
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    booking_id
+    coupon_id
+  }
+  
+  Note: 'Coupons applied to bookings'
+}

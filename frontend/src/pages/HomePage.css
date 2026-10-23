@@ -1,0 +1,15 @@
+.home-accommodations {
+    padding: 4rem 1rem;
+}
+
+.home-intro {
+    color: var(--color-text-muted);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.accommodation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+}

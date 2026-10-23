@@ -3,12 +3,9 @@ package main
 import (
 	"log"
 
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
-	"github.com/wayne-stays/backend/internal/accommodation"
 	"github.com/wayne-stays/backend/internal/config"
 	"github.com/wayne-stays/backend/internal/database"
-	"github.com/wayne-stays/backend/internal/merchandise"
+	"github.com/wayne-stays/backend/internal/server"
 	"github.com/wayne-stays/backend/internal/storage"
 )
 
@@ -21,7 +18,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to initialize storage: %v", err)
 	}
-	log.Printf("✅ Storage initialized (%s)", cfg.Storage.Type)
+	log.Printf("Storage initialized (%s)", cfg.Storage.Type)
 
 	// Connect to database
 	db, err := database.Connect(&cfg.Database)
@@ -35,61 +32,16 @@ func main() {
 	}
 
 	// Seed database
-	if err := database.Seed(db, store); err != nil {
+	if err := database.Seed(db); err != nil {
 		log.Fatalf("Failed to seed database: %v", err)
 	}
 
-	// Initialize Gin
-	gin.SetMode(cfg.Server.Mode)
-	router := gin.Default()
-
-	// CORS middleware
-	router.Use(cors.New(cors.Config{
-		AllowOrigins:     cfg.Server.AllowedOrigins,
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-	}))
-
-	// Serve static files (images) in development
-	if cfg.Storage.Type == "local" {
-		router.Static("/static", cfg.Storage.LocalPath)
-		log.Printf("📁 Serving static files from: %s", cfg.Storage.LocalPath)
-	}
-
-	// Health check
-	router.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"status":  "healthy",
-			"service": "wayne-stays-backend",
-		})
-	})
-
-	// API v1 routes
-	v1 := router.Group("/api/v1")
-	{
-		// Initialize accommodation components
-		accommodationRepo := accommodation.NewRepository(db)
-		accommodationService := accommodation.NewService(accommodationRepo, store)
-		accommodationHandler := accommodation.NewHandler(accommodationService)
-
-		// Register accommodation routes
-		accommodationHandler.RegisterRoutes(v1)
-
-		// Initialize merchandise components
-		merchandiseRepo := merchandise.NewRepository(db)
-		merchandiseService := merchandise.NewService(merchandiseRepo, store)
-		merchandiseHandler := merchandise.NewHandler(merchandiseService)
-
-		// Register merchandise routes
-		merchandiseHandler.RegisterRoutes(v1)
-	}
+	router := server.NewRouter(cfg, db, store)
 
 	// Start server
 	addr := ":" + cfg.Server.Port
-	log.Printf("🚀 Server starting on http://localhost%s", addr)
-	log.Printf("📍 API available at http://localhost%s/api/v1", addr)
+	log.Printf("Server starting on http://localhost%s", addr)
+	log.Printf("API available at http://localhost%s/api/v1", addr)
 
 	if err := router.Run(addr); err != nil {
 		log.Fatalf("Failed to start server: %v", err)

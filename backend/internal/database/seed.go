@@ -4,19 +4,41 @@ import (
 	"log"
 
 	"github.com/wayne-stays/backend/internal/models"
-	"github.com/wayne-stays/backend/internal/storage"
 	"gorm.io/gorm"
 )
 
 // Seed populates the database with initial data
-func Seed(db *gorm.DB, store storage.Storage) error {
+func Seed(db *gorm.DB) error {
 	log.Println("Seeding database...")
 
-	// Check if accommodations already exist
+	if err := seedAccommodations(db); err != nil {
+		return err
+	}
+	if err := seedMerchandise(db); err != nil {
+		return err
+	}
+
+	log.Println("✅ Database seeded successfully")
+	return nil
+}
+
+// isEmpty reports whether the table for model has no rows. Each table is checked
+// separately so a table added later still gets seeded on an existing database.
+func isEmpty(db *gorm.DB, model interface{}) (bool, error) {
 	var count int64
-	db.Model(&models.Accommodation{}).Count(&count)
-	if count > 0 {
-		log.Println("ℹ️  Database already seeded, skipping...")
+	if err := db.Model(model).Count(&count).Error; err != nil {
+		return false, err
+	}
+	return count == 0, nil
+}
+
+func seedAccommodations(db *gorm.DB) error {
+	empty, err := isEmpty(db, &models.Accommodation{})
+	if err != nil {
+		return err
+	}
+	if !empty {
+		log.Println("ℹ️  Accommodations already seeded, skipping...")
 		return nil
 	}
 
@@ -138,30 +160,38 @@ func Seed(db *gorm.DB, store storage.Storage) error {
 		}
 		log.Printf("✅ Seeded: %s", acc.Title)
 	}
+	return nil
+}
 
-	// Seed Merchandise
+func seedMerchandise(db *gorm.DB) error {
+	empty, err := isEmpty(db, &models.Merchandise{})
+	if err != nil {
+		return err
+	}
+	if !empty {
+		log.Println("ℹ️  Merchandise already seeded, skipping...")
+		return nil
+	}
+
 	merchandise := []models.Merchandise{
-		{Name: "Wayne Enterprises Leather Portfolio", Price: 32000, Category: "Accessories", IsNew: true, ImageURL: "merch/accessories/portfolio.png"},
-		{Name: "Wayne Manor Heritage Cashmere Scarf", Price: 45000, Category: "Apparel", IsNew: true, ImageURL: "merch/apparel/scarf.png"},
-		{Name: "Martha's Pearls (Replica)", Price: 45000, Category: "Accessories", ImageURL: "merch/accessories/pearls.png"},
-		{Name: "Wayne Manor: Architectural Legacy", Price: 12500, Category: "Home", ImageURL: "merch/home/book.png"},
-		{Name: "Martha Wayne Memorial Rose Set", Price: 9500, Category: "Home", ImageURL: "merch/home/roses.png"},
-		{Name: "Wayne Foundation Gala Program", Price: 35000, Category: "Collectibles", ImageURL: "merch/collectibles/program.png"},
-		{Name: "Kane County Reserve Wine", Price: 42000, Category: "Lifestyle", ImageURL: "merch/lifestyle/wine.png"},
-		{Name: "Gotham Skyline Silk Tie", Price: 18500, Category: "Apparel", ImageURL: "merch/apparel/tie.png"},
-		{Name: "Wayne Stays Linen Set", Price: 38000, Category: "Home", ImageURL: "merch/home/linens.png"},
-		{Name: "Gotham Opera House Poster", Price: 16500, Category: "Collectibles", ImageURL: "merch/collectibles/poster.png"},
+		{Name: "Wayne Enterprises Leather Portfolio", Price: 32000, Category: "accessories", IsNew: true, ImageURL: "merch/accessories/portfolio.png"},
+		{Name: "Wayne Manor Heritage Cashmere Scarf", Price: 45000, Category: "apparel", IsNew: true, ImageURL: "merch/apparel/scarf.png"},
+		{Name: "Martha's Pearls (Replica)", Price: 45000, Category: "accessories", ImageURL: "merch/accessories/pearls.png"},
+		{Name: "Wayne Manor: Architectural Legacy", Price: 12500, Category: "home", ImageURL: "merch/home/book.png"},
+		{Name: "Martha Wayne Memorial Rose Set", Price: 9500, Category: "home", ImageURL: "merch/home/roses.png"},
+		{Name: "Wayne Foundation Gala Program", Price: 35000, Category: "collectibles", ImageURL: "merch/collectibles/program.png"},
+		{Name: "Kane County Reserve Wine", Price: 42000, Category: "lifestyle", ImageURL: "merch/lifestyle/wine.png"},
+		{Name: "Gotham Skyline Silk Tie", Price: 18500, Category: "apparel", ImageURL: "merch/apparel/tie.png"},
+		{Name: "Wayne Stays Linen Set", Price: 38000, Category: "home", ImageURL: "merch/home/linens.png"},
+		{Name: "Gotham Opera House Poster", Price: 16500, Category: "collectibles", ImageURL: "merch/collectibles/poster.png"},
 	}
 
 	for _, item := range merchandise {
 		if err := db.Create(&item).Error; err != nil {
 			log.Printf("❌ Failed to seed merchandise: %s - %v", item.Name, err)
-			// Don't fail the whole seed if dupes (though check above is for accommodations only, so this might be needed)
-			continue
+			return err
 		}
 		log.Printf("✅ Seeded Item: %s", item.Name)
 	}
-
-	log.Println("✅ Database seeded successfully")
 	return nil
 }

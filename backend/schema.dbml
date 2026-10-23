@@ -1,6 +1,6 @@
 // Wayne Stays Database Schema
 // Use this at https://dbdiagram.io to visualize
-// Last updated: 2026-01-30
+// Last updated: 2026-10-23
 
 Project wayne_stays {
   database_type: 'PostgreSQL'
@@ -9,6 +9,8 @@ Project wayne_stays {
 
 // ============================================
 // EXISTING TABLES (Already Implemented)
+// Created by the SQL files in backend/internal/database/migrations/;
+// those files are authoritative for the exact column types.
 // ============================================
 
 Table accommodations {
@@ -45,7 +47,7 @@ Table merchandise {
   category varchar(50) [note: 'apparel, accessories, collectibles, home, lifestyle']
   image_url varchar(500)
   is_new boolean [default: false]
-  stock_quantity integer [default: 0, note: 'TODO: Add inventory management']
+  stock_quantity integer [default: 0, note: 'Not yet migrated - TODO: Add inventory management']
   created_at timestamp [default: `now()`]
   updated_at timestamp [default: `now()`]
   deleted_at timestamp [null]
@@ -345,7 +347,7 @@ Table booking_payments {
     Payment transactions for accommodation bookings.
     Supports multiple payment gateways (Stripe, Juspay, Razorpay, etc.).
     
-    Gateway customer IDs stored in users table (not here - DRY).
+    Gateway customer IDs stored in gateway_customers table (not here - DRY).
     Saved payment method details in payment_methods table.
     
     Field mapping by provider:
@@ -402,7 +404,7 @@ Table order_payments {
     Payment transactions for merchandise orders.
     Supports multiple payment gateways (Stripe, Juspay, Razorpay, etc.).
     
-    Gateway customer IDs stored in users table (not here - DRY).
+    Gateway customer IDs stored in gateway_customers table (not here - DRY).
     Saved payment method details in payment_methods table.
   '''
 }

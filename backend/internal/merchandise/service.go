@@ -28,8 +28,8 @@ type MerchandiseResponse struct {
 	Description string  `json:"description,omitempty"`
 	Price       float64 `json:"price"` // in dollars
 	Category    string  `json:"category"`
-	ImageURL    string  `json:"image_url"`
-	IsNew       bool    `json:"is_new"`
+	ImageURL    string  `json:"imageUrl"`
+	IsNew       bool    `json:"isNew"`
 }
 
 func (s *service) GetAll() ([]MerchandiseResponse, error) {

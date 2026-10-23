@@ -1,9 +1,12 @@
 package accommodation
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 // Handler handles HTTP requests for accommodations
@@ -54,11 +57,15 @@ func (h *Handler) GetAll(c *gin.Context) {
 func (h *Handler) GetByID(c *gin.Context) {
 	id := c.Param("id")
 
+	// A malformed UUID can never match, and would otherwise be a Postgres error
+	if _, err := uuid.Parse(id); err != nil {
+		respondNotFound(c)
+		return
+	}
+
 	accommodation, err := h.service.GetByID(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"error": "Accommodation not found",
-		})
+		respondLookupError(c, err)
 		return
 	}
 
@@ -73,14 +80,29 @@ func (h *Handler) GetBySlug(c *gin.Context) {
 
 	accommodation, err := h.service.GetBySlug(slug)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"error": "Accommodation not found",
-		})
+		respondLookupError(c, err)
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"data": accommodation,
+	})
+}
+
+// respondLookupError maps a single-record lookup error to a 404 or a 500
+func respondLookupError(c *gin.Context, err error) {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		respondNotFound(c)
+		return
+	}
+	c.JSON(http.StatusInternalServerError, gin.H{
+		"error": "Failed to retrieve accommodation",
+	})
+}
+
+func respondNotFound(c *gin.Context) {
+	c.JSON(http.StatusNotFound, gin.H{
+		"error": "Accommodation not found",
 	})
 }
 

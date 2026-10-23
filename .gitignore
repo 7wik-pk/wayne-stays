@@ -33,3 +33,6 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+
+# image originals (kept locally by scripts/optimize-images.sh)
+img_backup/

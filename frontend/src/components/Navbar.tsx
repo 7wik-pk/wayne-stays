@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router';
 import './Navbar.css';
 
 const Navbar: React.FC = () => {
@@ -23,15 +24,13 @@ const Navbar: React.FC = () => {
     return (
         <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
             <div className="container navbar-content">
-                <div className="logo">
+                <Link to="/" className="logo">
                     <img src="/logo.png?v=2" alt="Wayne Stays" />
-                </div>
+                </Link>
+                {/* Section links point at the home page so they also work from other routes */}
                 <ul className="nav-links">
-                    <li><a href="#accommodations">Accommodations</a></li>
-                    <li><a href="#experiences">Experiences</a></li>
-                    <li><a href="#shop">Shop</a></li>
-                    <li><a href="#about">The Legacy</a></li>
-                    <li><a href="#contact">Concierge</a></li>
+                    <li><a href="/#accommodations">Accommodations</a></li>
+                    <li><a href="/#shop">Shop</a></li>
                 </ul>
             </div>
         </nav>

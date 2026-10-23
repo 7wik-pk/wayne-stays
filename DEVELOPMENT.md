@@ -11,11 +11,6 @@ Complete guide to get Wayne Stays running locally.
 git clone <your-repo-url>
 cd wayne-stays
 
-```bash
-# 1. Clone the repository
-git clone <your-repo-url>
-cd wayne-stays
-
 # 2. Start everything (Database + Backend + Frontend)
 docker compose up -d
 
@@ -27,7 +22,7 @@ docker compose up -d
 **Access:**
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8080
-- API Docs: http://localhost:8080/api/v1
+- API Docs: [API.md](API.md)
 
 ## Running Frontend and Backend in development environments
 
@@ -41,6 +36,7 @@ For the next 2 steps, you can either run both backend and frontend on 2 separate
 ### Start the backend
 ```bash
 cd backend
+cp .env.example .env   # first time only
 go run cmd/api/main.go
 ```
 
@@ -56,7 +52,7 @@ npm run dev
 
 - **Docker** & **Docker Compose** (for PostgreSQL)
 - **Go** 1.23+ (for backend)
-- **Node.js** 18+ (for frontend)
+- **Node.js** 20.19+ (for frontend; required by Vite 7)
 - **Git**
 
 ---
@@ -140,10 +136,26 @@ go run cmd/api/main.go
 
 # The backend will:
 # 1. Connect to PostgreSQL
-# 2. Run migrations (create tables)
-# 3. Seed initial data (5 accommodations)
+# 2. Apply any pending SQL migrations (internal/database/migrations/)
+# 3. Seed any empty tables (5 accommodations, 10 merch items)
 # 4. Start HTTP server on :8080
 ```
+
+### Database Migrations
+
+Schema changes are versioned SQL files in `backend/internal/database/migrations/`,
+applied in order by [goose](https://github.com/pressly/goose) on startup. Goose
+records applied versions in the `goose_db_version` table, so each file runs once.
+
+To add a migration, create the next numbered file:
+
+```bash
+cd backend
+go run github.com/pressly/goose/v3/cmd/goose@v3.26.0 -s -dir internal/database/migrations create add_bookings sql
+```
+
+Then fill in its `-- +goose Up` and `-- +goose Down` sections. Never edit a
+migration that has already been applied anywhere; add a new one instead.
 
 ### Backend Environment Variables
 
@@ -208,25 +220,33 @@ VITE_API_URL=http://localhost:8080/api/v1
 wayne-stays/
 ├── docker-compose.yml          # Infrastructure (PostgreSQL, Redis, MinIO)
 ├── img/                        # Static images (served by backend)
-│   └── accommodations/
-│       ├── wayne_tower_sky_suites/
-│       ├── miagani_island_sanctuary/
-│       └── ...
+│   ├── accommodations/
+│   │   ├── wayne_tower_sky_suites/
+│   │   ├── miagani_island_sanctuary/
+│   │   └── ...
+│   └── merch/
 ├── backend/                    # Golang API
 │   ├── cmd/api/main.go         # Entry point
 │   ├── internal/               # Application code
-│   │   ├── accommodation/      # Feature modules
+│   │   ├── accommodation/      # Feature modules (handler/service/repository)
+│   │   ├── merchandise/
+│   │   ├── server/             # Router: middleware + route registration
 │   │   ├── models/             # Data models
 │   │   ├── config/             # Configuration
-│   │   ├── database/           # DB setup
-│   │   └── storage/            # File storage
+│   │   ├── database/           # Connection, migrations/, seed data
+│   │   ├── storage/            # File storage
+│   │   └── testutil/           # Throwaway Postgres for tests
 │   ├── .env                    # Backend config
 │   ├── go.mod                  # Go dependencies
 │   └── README.md
 ├── frontend/                   # React + TypeScript
 │   ├── src/
-│   │   ├── components/         # React components
-│   │   ├── App.tsx             # Main app
+│   │   ├── api/                # Typed API client + response types
+│   │   ├── hooks/              # Custom hooks (useApi)
+│   │   ├── layouts/            # Page frames (navbar + footer)
+│   │   ├── pages/              # One component per route
+│   │   ├── components/         # Reusable components
+│   │   ├── router.tsx          # Route table
 │   │   └── main.tsx            # Entry point
 │   ├── package.json            # NPM dependencies
 │   └── README.md
@@ -243,15 +263,27 @@ wayne-stays/
 
 ```bash
 cd backend
-go test ./...
+go test ./...          # all tests
+go test -short ./...   # skip the database-backed tests
 ```
+
+Database-backed tests (migrations, seeding, HTTP endpoints) run against a real
+PostgreSQL 16 started by [embedded-postgres](https://github.com/fergusstrange/embedded-postgres),
+so neither Docker nor a local Postgres is needed. The first run downloads the
+Postgres binaries into `~/.embedded-postgres-go`; later runs reuse them. Each
+test gets its own empty database.
 
 ### Frontend Tests
 
 ```bash
 cd frontend
-npm test
+npm test               # run once
+npm run test:watch     # re-run on save
 ```
+
+Tests use [Vitest](https://vitest.dev) with [Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
+in a simulated browser (jsdom). `fetch` is stubbed with `src/test/mockFetch.ts`,
+so the backend does not need to be running.
 
 ---
 
@@ -282,7 +314,7 @@ docker compose down -v
 # Start fresh
 docker compose up -d postgres
 
-# Restart backend to re-run migrations and seed
+# Restart backend to re-apply migrations and seed
 cd backend
 go run cmd/api/main.go
 ```

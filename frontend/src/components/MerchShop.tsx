@@ -1,44 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import MerchItem from './MerchItem';
+import { api } from '../api/client';
+import { useApi } from '../hooks/useApi';
 import './MerchShop.css';
 
-interface Product {
-    id: string;
-    name: string;
-    price: number;
-    category: string;
-    image_url: string;
-    is_new: boolean;
-}
+const CATEGORIES = ['all', 'apparel', 'accessories', 'collectibles', 'home', 'lifestyle'];
 
 const MerchShop: React.FC = () => {
     const [filter, setFilter] = useState<string>('all');
-    const [products, setProducts] = useState<Product[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        const fetchProducts = async () => {
-            const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
-            try {
-                const response = await fetch(`${apiBase}/merchandise`);
-                if (!response.ok) throw new Error('Failed to fetch merchandise');
-                const data = await response.json();
-                setProducts(data.data);
-            } catch (err) {
-                console.error(err);
-                setError('Unable to load full collection.');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchProducts();
-    }, []);
+    const { data: products, loading, error } = useApi(api.listMerchandise);
 
     const filteredProducts = filter === 'all'
-        ? products
-        : products.filter(p => p.category.toLowerCase() === filter);
+        ? products ?? []
+        : (products ?? []).filter(p => p.category === filter);
 
     return (
         <section id="shop" className="merch-shop">
@@ -49,7 +23,7 @@ const MerchShop: React.FC = () => {
                 </div>
 
                 <div className="merch-filters">
-                    {['all', 'apparel', 'accessories', 'collectibles', 'home', 'lifestyle'].map(cat => (
+                    {CATEGORIES.map(cat => (
                         <button
                             key={cat}
                             className={`filter-btn ${filter === cat ? 'active' : ''}`}
@@ -61,12 +35,12 @@ const MerchShop: React.FC = () => {
                 </div>
 
                 {loading ? (
-                    <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-gold-primary)' }}>
+                    <div className="status-message">
                         Loading collection...
                     </div>
                 ) : error ? (
-                    <div style={{ textAlign: 'center', padding: '2rem', color: 'red' }}>
-                        {error}
+                    <div className="status-message status-message--error">
+                        Unable to load full collection.
                     </div>
                 ) : (
                     <div className="merch-grid">
@@ -75,15 +49,14 @@ const MerchShop: React.FC = () => {
                                 key={product.id}
                                 name={product.name}
                                 price={product.price}
-                                category={product.category}
-                                image={product.image_url}
-                                isNew={product.is_new}
+                                image={product.imageUrl}
+                                isNew={product.isNew}
                             />
                         ))}
                     </div>
                 )}
             </div>
-        </section >
+        </section>
     );
 };
 

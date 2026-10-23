@@ -59,12 +59,17 @@ GET /health
 
 ### Accommodations
 ```
-GET    /api/v1/accommodations      # List all
-GET    /api/v1/accommodations/:id  # Get one
-POST   /api/v1/accommodations      # Create (admin)
-PUT    /api/v1/accommodations/:id  # Update (admin)
-DELETE /api/v1/accommodations/:id  # Delete (admin)
+GET    /api/v1/accommodations             # List all (?category=historic)
+GET    /api/v1/accommodations/:id         # Get one by UUID
+GET    /api/v1/accommodations/slug/:slug  # Get one by slug
 ```
+
+### Merchandise
+```
+GET    /api/v1/merchandise                # List all (?category=apparel)
+```
+
+Full request/response details: [API.md](../API.md)
 
 ### Static Images
 ```
@@ -77,22 +82,28 @@ GET /static/accommodations/:property/:image.jpg
 backend/
 ├── cmd/
 │   └── api/
-│       └── main.go              # Application entry point
+│       └── main.go              # Entry point: config → DB → migrate → seed → serve
 ├── internal/
+│   ├── accommodation/           # handler.go / service.go / repository.go
+│   ├── merchandise/             # handler.go / service.go / repository.go
+│   ├── server/
+│   │   └── server.go            # Router: middleware, static files, routes
 │   ├── config/
 │   │   └── config.go            # Configuration management
 │   ├── database/
-│   │   ├── database.go          # DB connection
+│   │   ├── database.go          # DB connection + migration runner
+│   │   ├── migrations/          # Versioned SQL migrations (goose)
 │   │   └── seed.go              # Data seeding
-│   ├── models/
-│   │   └── accommodation.go     # Data models
-│   └── storage/
-│       ├── storage.go           # Storage interface
-│       ├── local.go             # Local filesystem
-│       ├── s3.go                # AWS S3 (TODO)
-│       └── factory.go           # Storage factory
+│   ├── models/                  # GORM models
+│   ├── payment/
+│   │   └── gateway.go           # Multi-gateway interfaces (design sketch, unused)
+│   ├── storage/
+│   │   ├── storage.go           # Storage interface
+│   │   ├── local.go             # Local filesystem
+│   │   └── factory.go           # Storage factory (S3 not yet implemented)
+│   └── testutil/                # Throwaway Postgres for tests
 ├── .env.example                 # Environment template
-├── docker-compose.yml           # PostgreSQL + MinIO
+├── schema.dbml                  # Full planned schema (dbdiagram.io)
 └── go.mod                       # Dependencies
 ```
 
@@ -104,8 +115,10 @@ See `.env.example` for all configuration options.
 
 The application automatically:
 1. Connects to PostgreSQL
-2. Runs migrations (creates tables)
-3. Seeds initial data (5 accommodations)
+2. Applies pending SQL migrations from `internal/database/migrations/` (goose)
+3. Seeds any empty tables (5 accommodations, 10 merch items)
+
+See [DEVELOPMENT.md](../DEVELOPMENT.md#database-migrations) for adding a migration.
 
 ### Manual Database Operations
 
@@ -116,19 +129,28 @@ docker exec -it wayne-stays-postgres psql -U wayne_stays -d wayne_stays_dev
 # View accommodations
 SELECT title, price_start, location FROM accommodations;
 
-# Reset database
-docker-compose down -v
-docker-compose up -d postgres
-go run cmd/api/main.go
+# Reset database (from the project root)
+docker compose down -v
+docker compose up -d postgres
+cd backend && go run cmd/api/main.go
 ```
 
 ## Development
 
 ### Adding New Features
 
-1. **Models**: Add to `internal/models/`
-2. **Routes**: Add to `cmd/api/main.go` or create handlers
-3. **Database**: Update migration in `database.Migrate()`
+1. **Database**: Add a new SQL migration in `internal/database/migrations/`
+2. **Models**: Add to `internal/models/`
+3. **Feature module**: `internal/<feature>/` with handler, service and repository
+4. **Routes**: Register the handler in `internal/server/server.go`
+5. **Tests**: Endpoint tests go in `internal/server/server_test.go`
+
+## Testing
+
+```bash
+go test ./...          # includes database-backed tests (no Docker needed)
+go test -short ./...   # unit tests only
+```
 
 ### Static Files & Images
 
@@ -148,11 +170,13 @@ When running in Docker:
 **S3 (Production)**:
 - Switch `STORAGE_TYPE=s3` in `.env`
 - Configure AWS credentials
-- Implement `internal/storage/s3.go`
+- Implement an S3 backend in `internal/storage/` (not yet written) and wire it into `factory.go`
 
 ## Next Steps
 
-- [x] Build accommodation CRUD handlers ✅
+- [x] Build accommodation read endpoints ✅
+- [x] Versioned SQL migrations ✅
+- [x] Database-backed test suite ✅
 - [ ] Add authentication & authorization
 - [ ] Implement S3 storage backend
 - [ ] Add Stripe payment integration

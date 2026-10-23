@@ -1,0 +1,28 @@
+.site-footer {
+    background-color: var(--color-bg-secondary);
+    padding: 4rem 1rem;
+    margin-top: 4rem;
+    border-top: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.site-footer-title {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.site-footer-tagline {
+    color: var(--color-text-muted);
+    margin-bottom: 2rem;
+}
+
+.site-footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.site-footer-copyright {
+    margin-top: 2rem;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+}

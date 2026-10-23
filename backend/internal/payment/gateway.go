@@ -279,28 +279,27 @@ type PaymentRepository interface {
 }
 
 // ============================================
-// Model (matches your schema)
+// Model (matches booking_payments in schema.dbml)
 // ============================================
 
 type BookingPayment struct {
-	ID                uuid.UUID
-	BookingID         uuid.UUID
-	UserID            uuid.UUID
-	GatewayProvider   string // stripe, juspay, razorpay
-	GatewayPaymentID  string
-	GatewayChargeID   string
-	GatewayCustomerID string
-	GatewayOrderID    string
-	Amount            int64
-	Currency          string
-	PaymentMethod     string
-	Status            string
-	FailureReason     string
-	RefundAmount      int64
-	RefundedAt        *time.Time
-	Metadata          map[string]string
-	CreatedAt         time.Time
-	UpdatedAt         time.Time
+	ID               uuid.UUID
+	BookingID        uuid.UUID
+	UserID           uuid.UUID
+	GatewayProvider  string // stripe, juspay, razorpay
+	GatewayPaymentID string
+	GatewayChargeID  string
+	GatewayOrderID   string
+	Amount           int64
+	Currency         string
+	PaymentMethod    string
+	Status           string
+	FailureReason    string
+	RefundAmount     int64
+	RefundedAt       *time.Time
+	Metadata         map[string]string
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
 }
 
 // Helper function

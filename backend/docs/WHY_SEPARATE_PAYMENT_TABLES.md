@@ -1,5 +1,8 @@
 # Why Separate Payment Tables is Better (PostgreSQL Best Practice)
 
+> **Note:** the separate-tables decision below is current. Where this doc says customer IDs are stored on the `users` table, that has since moved to the `gateway_customers` table; see [GATEWAY_CUSTOMERS_TABLE.md](GATEWAY_CUSTOMERS_TABLE.md).
+
+
 ## Your Instinct Was Correct ✅
 
 Separate `booking_payments` and `order_payments` tables is **actually the better approach** for PostgreSQL. Here's why:

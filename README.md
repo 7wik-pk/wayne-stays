@@ -14,6 +14,7 @@ docker compose up -d postgres
 
 # 2. Start backend (terminal 1)
 cd backend
+cp .env.example .env   # first time only
 go run cmd/api/main.go
 
 # 3. Start frontend (terminal 2)
@@ -33,7 +34,7 @@ npm run dev
 
 - Docker & Docker Compose
 - Go 1.23+
-- Node.js 18+
+- Node.js 20.19+ (required by Vite 7)
 
 ---
 
@@ -56,7 +57,7 @@ wayne-stays/
 ├── backend/                    # Golang + Gin + GORM + PostgreSQL
 │   ├── docs/                   # Architecture & design decisions
 │   └── internal/payment/       # Multi-gateway payment abstraction
-├── img/                        # Static accommodation images
+├── img/                        # Static accommodation & merch images (served by backend)
 ├── scripts/                    # Utility scripts
 └── DEVELOPMENT.md              # Setup guide
 ```
@@ -107,8 +108,10 @@ https://drive.google.com/file/d/1BJ7NUKANT-lhKWoc-eQ8d7itU7xDwLrn/view?usp=shari
 ## 🛠️ Technology Stack
 
 ### Frontend
-- React 18 with TypeScript
+- React 19 with TypeScript
+- React Router 7 (client-side routing)
 - Vite (build tool)
+- Vitest + Testing Library (tests)
 - Vanilla CSS (custom design system)
 - Google Fonts (Cinzel, Lato)
 
@@ -116,6 +119,7 @@ https://drive.google.com/file/d/1BJ7NUKANT-lhKWoc-eQ8d7itU7xDwLrn/view?usp=shari
 - Go 1.23
 - Gin (HTTP framework)
 - GORM (ORM)
+- goose (versioned SQL migrations)
 - PostgreSQL 16 (JSONB, UUID, full-text search)
 - Docker Compose (infrastructure)
 
@@ -136,6 +140,18 @@ curl http://localhost:8080/api/v1/accommodations?category=historic
 
 # Get by slug
 curl http://localhost:8080/api/v1/accommodations/slug/wayne-tower-sky-suites
+
+# Merchandise, optionally by category
+curl http://localhost:8080/api/v1/merchandise?category=apparel
+```
+
+---
+
+## ✅ Tests
+
+```bash
+cd backend && go test ./...    # spins up a throwaway Postgres; no Docker needed
+cd frontend && npm test        # Vitest
 ```
 
 ---
@@ -143,7 +159,7 @@ curl http://localhost:8080/api/v1/accommodations/slug/wayne-tower-sky-suites
 ## 🤝 Contributing
 
 This is a learning project exploring:
-- React vs Vue.js concepts (see [react_vue_map.md](react_vue_map.md))
+- React vs Vue.js concepts (see [react_vue_map.md](frontend/react_vue_map.md))
 - Golang backend development
 - RESTful API design
 - PostgreSQL with JSONB

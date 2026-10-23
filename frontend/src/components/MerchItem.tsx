@@ -4,7 +4,6 @@ import './MerchItem.css';
 interface MerchItemProps {
     name: string;
     price: number;
-    category: string;
     image: string;
     isNew?: boolean;
 }

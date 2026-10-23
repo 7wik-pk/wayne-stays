@@ -1,15 +1,21 @@
 package database
 
 import (
+	"context"
+	"embed"
 	"fmt"
+	"io/fs"
 	"log"
 
+	"github.com/pressly/goose/v3"
 	"github.com/wayne-stays/backend/internal/config"
-	"github.com/wayne-stays/backend/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
+
+//go:embed migrations/*.sql
+var embeddedMigrations embed.FS
 
 // Connect establishes a database connection
 func Connect(cfg *config.DatabaseConfig) (*gorm.DB, error) {
@@ -20,21 +26,38 @@ func Connect(cfg *config.DatabaseConfig) (*gorm.DB, error) {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
-	log.Println("✅ Database connected successfully")
+	log.Println("Database connected successfully")
 	return db, nil
 }
 
-// Migrate runs database migrations
+// Migrate applies any pending SQL migrations from the migrations/ directory.
+// Each migration runs once; goose records applied versions in goose_db_version.
 func Migrate(db *gorm.DB) error {
 	log.Println("Running database migrations...")
 
-	if err := db.AutoMigrate(
-		&models.Accommodation{},
-		&models.Merchandise{},
-	); err != nil {
-		return fmt.Errorf("migration failed: %w", err)
+	sqlDB, err := db.DB()
+	if err != nil {
+		return fmt.Errorf("failed to get sql.DB: %w", err)
 	}
 
-	log.Println("✅ Migrations completed successfully")
+	migrations, err := fs.Sub(embeddedMigrations, "migrations")
+	if err != nil {
+		return fmt.Errorf("failed to load migrations: %w", err)
+	}
+
+	provider, err := goose.NewProvider(goose.DialectPostgres, sqlDB, migrations)
+	if err != nil {
+		return fmt.Errorf("failed to create migration provider: %w", err)
+	}
+
+	results, err := provider.Up(context.Background())
+	if err != nil {
+		return fmt.Errorf("migration failed: %w", err)
+	}
+	for _, r := range results {
+		log.Printf("   applied %s (%s)", r.Source.Path, r.Duration)
+	}
+
+	log.Println("Migrations completed successfully")
 	return nil
 }

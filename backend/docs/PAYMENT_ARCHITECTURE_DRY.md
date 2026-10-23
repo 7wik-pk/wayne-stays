@@ -1,5 +1,8 @@
 # DRY Payment Architecture - Wayne Stays
 
+> **Status: partly superseded.** Two decisions here changed: gateway customer IDs moved from `users` columns to the `gateway_customers` table ([GATEWAY_CUSTOMERS_TABLE.md](GATEWAY_CUSTOMERS_TABLE.md)), and payments stay in separate `booking_payments` / `order_payments` tables ([WHY_SEPARATE_PAYMENT_TABLES.md](WHY_SEPARATE_PAYMENT_TABLES.md)). `schema.dbml` is the source of truth.
+
+
 ## Overview
 
 The payment system has been refactored to be maximally DRY (Don't Repeat Yourself) while supporting multiple payment gateways.

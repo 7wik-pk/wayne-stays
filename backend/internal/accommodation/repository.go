@@ -15,10 +15,13 @@ func NewRepository(db *gorm.DB) *Repository {
 	return &Repository{db: db}
 }
 
+// listOrder keeps list results stable: listing order, then id as a tiebreak
+const listOrder = "created_at, id"
+
 // FindAll retrieves all active accommodations
 func (r *Repository) FindAll() ([]models.Accommodation, error) {
 	var accommodations []models.Accommodation
-	err := r.db.Where("status = ?", "active").Find(&accommodations).Error
+	err := r.db.Where("status = ?", "active").Order(listOrder).Find(&accommodations).Error
 	return accommodations, err
 }
 
@@ -45,7 +48,7 @@ func (r *Repository) FindBySlug(slug string) (*models.Accommodation, error) {
 // FindByCategory retrieves accommodations by category
 func (r *Repository) FindByCategory(category string) ([]models.Accommodation, error) {
 	var accommodations []models.Accommodation
-	err := r.db.Where("category = ? AND status = ?", category, "active").Find(&accommodations).Error
+	err := r.db.Where("category = ? AND status = ?", category, "active").Order(listOrder).Find(&accommodations).Error
 	return accommodations, err
 }
 

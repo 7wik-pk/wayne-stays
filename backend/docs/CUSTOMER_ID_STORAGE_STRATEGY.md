@@ -1,5 +1,8 @@
 # Gateway Customer ID Storage Strategy
 
+> **Status: superseded.** Gateway customer IDs now live in a separate `gateway_customers` table (one row per user per gateway), not in columns on `users` or `payment_methods`. See [GATEWAY_CUSTOMERS_TABLE.md](GATEWAY_CUSTOMERS_TABLE.md) and `schema.dbml`. Kept for the reasoning history.
+
+
 ## The Question
 
 Where should we store gateway customer IDs (e.g., `stripe_customer_id`)?

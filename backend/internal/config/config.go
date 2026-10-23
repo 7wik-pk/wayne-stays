@@ -91,14 +91,25 @@ func getEnv(key, defaultValue string) string {
 	return defaultValue
 }
 
-// getEnvSlice gets an environment variable as a slice (comma-separated)
+// getEnvSlice gets an environment variable as a slice (comma-separated).
+// Whitespace around items is trimmed and empty items are dropped, so
+// "a, b," yields ["a", "b"].
 func getEnvSlice(key string, defaultValue []string) []string {
 	value := os.Getenv(key)
 	if value == "" {
 		return defaultValue
 	}
-	// Simple comma split
-	return strings.Split(value, ",")
+
+	var items []string
+	for _, item := range strings.Split(value, ",") {
+		if item = strings.TrimSpace(item); item != "" {
+			items = append(items, item)
+		}
+	}
+	if len(items) == 0 {
+		return defaultValue
+	}
+	return items
 }
 
 // MustLoad loads configuration and panics on error

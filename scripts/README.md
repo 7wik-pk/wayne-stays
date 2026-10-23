@@ -15,8 +15,7 @@ Comprehensive script that:
 ### Usage
 
 ```bash
-cd scripts
-./optimize-images.sh
+./scripts/optimize-images.sh   # works from any directory
 ```
 
 ### Configuration

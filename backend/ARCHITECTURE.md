@@ -94,17 +94,20 @@ backend/
 │   │   └── config.go                  # Env var management
 │   │
 │   ├── database/                      # Database setup
-│   │   ├── database.go                # Connection & migrations
+│   │   ├── database.go                # Connection & migration runner
+│   │   ├── migrations/                # Versioned SQL (goose)
 │   │   └── seed.go                    # Initial data
 │   │
-│   └── storage/                       # File storage abstraction
-│       ├── storage.go                 # Interface
-│       ├── local.go                   # Local filesystem
-│       ├── s3.go                      # AWS S3 (future)
-│       └── factory.go                 # Storage factory
+│   ├── storage/                       # File storage abstraction
+│   │   ├── storage.go                 # Interface
+│   │   ├── local.go                   # Local filesystem
+│   │   └── factory.go                 # Storage factory (S3: future)
+│   │
+│   ├── merchandise/                   # Feature module (same layering)
+│   ├── server/                        # Router & route registration
+│   └── testutil/                      # Throwaway Postgres for tests
 │
 ├── .env                               # Environment config
-├── docker-compose.yml                 # PostgreSQL container
 └── go.mod                             # Dependencies
 ```
 
@@ -311,9 +314,9 @@ Consider evolving when you encounter:
 
 **Features:**
 - ✅ List accommodations
-- ✅ View details
-- ✅ Simple booking
-- ✅ Basic payment (Stripe)
+- ✅ View details (API)
+- 🔜 Simple booking
+- 🔜 Basic payment (Stripe)
 - ✅ Static pricing
 
 **Stack:**
@@ -724,7 +727,9 @@ func (i *InventoryAggregate) apply(event DomainEvent) {
 |-----------|-----------|-----------|
 | **Language** | Go 1.23 | Performance, simplicity, strong typing |
 | **HTTP Framework** | Gin | Fast, popular, good middleware support |
-| **ORM** | GORM | Productivity, migrations, PostgreSQL support |
+| **ORM** | GORM | Productivity, PostgreSQL support |
+| **Migrations** | goose (embedded SQL files) | Versioned, reviewable schema changes; runs on startup |
+| **Testing** | go test + embedded-postgres | Real Postgres in tests without Docker |
 | **Database** | PostgreSQL 16 | ACID, JSONB, scalability, pgvector (future AI) |
 | **Storage** | Local → S3 | Development simplicity, production scalability |
 | **Config** | godotenv | 12-factor app compliance |
@@ -812,6 +817,7 @@ func (i *InventoryAggregate) apply(event DomainEvent) {
 | 2026-01-28 | Use PostgreSQL over MongoDB | ACID compliance (Stripe), relational needs, pgvector (AI) | ✅ Active |
 | 2026-01-28 | Local storage → S3 pattern | Development simplicity, production cloud-native | ✅ Active |
 | 2026-01-28 | Defer DDD/CQRS | Current complexity doesn't warrant it | ✅ Deferred |
+| 2026-10-23 | Replace GORM AutoMigrate with goose SQL migrations | AutoMigrate can't rename, drop or backfill; bookings/payments need reviewable, ordered schema changes | ✅ Active |
 | TBD | Introduce pricing domain service | When seasonal/dynamic pricing needed | 🔜 Planned |
 | TBD | Add event bus | When async workflows required | 🔜 Planned |
 | TBD | Implement CQRS | When read performance becomes bottleneck | 🔜 Planned |

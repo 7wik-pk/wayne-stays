@@ -62,7 +62,7 @@ curl http://localhost:8080/api/v1/accommodations?category=historic
 ### Get Accommodation by ID
 **GET** `/accommodations/:id`
 
-Returns a single accommodation by UUID.
+Returns a single accommodation by UUID. A malformed or unknown ID returns 404.
 
 **Example:**
 ```bash
@@ -153,9 +153,53 @@ curl http://localhost:8080/api/v1/accommodations/slug/wayne-tower-sky-suites
 
 ---
 
+## Merchandise
+
+### Get All Merchandise
+**GET** `/merchandise`
+
+Returns all shop items with full image URLs.
+
+**Query Parameters:**
+- `category` (optional, case-insensitive): Filter by category. `all` is the same as omitting it.
+  - Valid values: `apparel`, `accessories`, `collectibles`, `home`, `lifestyle`
+
+**Example:**
+```bash
+curl http://localhost:8080/api/v1/merchandise?category=apparel
+```
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "name": "Gotham Skyline Silk Tie",
+      "price": 185,
+      "category": "apparel",
+      "imageUrl": "http://localhost:8080/static/merch/apparel/tie.png",
+      "isNew": false
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string (UUID) | Unique identifier |
+| `name` | string | Product name |
+| `description` | string | Optional; omitted when empty |
+| `price` | number | Price (in dollars) |
+| `category` | string | Product category |
+| `imageUrl` | string | Product image URL |
+| `isNew` | boolean | Shown as "New Arrival" |
+
+---
+
 ## Static Images
 
-Images are served from `/static/accommodations/:property/:image.jpg`
+Images are served from `/static/accommodations/:property/:image.jpg` and `/static/merch/:category/:image.png`
 
 **Example:**
 ```
@@ -182,7 +226,7 @@ curl http://localhost:8080/health
 
 ---
 
-##CORS
+## CORS
 
 The API has CORS enabled for:
 - `http://localhost:5173` (Vite dev server)
